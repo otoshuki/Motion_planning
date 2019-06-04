@@ -38,11 +38,18 @@ for fname in images:
 cv2.destroyAllWindows()
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 
-# print (mtx)
-# data = {"camera_matrix": mtx.tolist(), "dist_coeff": dist.tolist()}
-# fname = "calib_images/data.yaml"
-# with open(fname, "w") as f:
-#     yaml.dump(data, f)
+img = cv2.imread('calib_images/img01.jpg')
+h,  w = img.shape[:2]
+newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
+
+# undistort
+mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w,h), 5)
+dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
+# crop the image
+x, y, w, h = roi
+dst = dst[y:y+h, x:x+w]
+cv2.imwrite('calibresult.png', dst)
+
 print("Calibration Successful ! Written values to a file !")
 
 cv_file = cv2.FileStorage("test.yaml", cv2.FILE_STORAGE_WRITE)

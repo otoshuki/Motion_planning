@@ -1,4 +1,5 @@
-#Robotics Club - IITG
+#Robotics Club - Motion Planning Set-Up
+#Masking
 
 import numpy as np
 import cv2
