@@ -29,20 +29,28 @@ def main():
                                     font, 0.5, (0, 0, 255), 1, 4)
                 #0th marker as robot location
                 if ids[i][0] == 0: robot_index = i
+        #Create mask
+        mask = np.zeros(frame.shape)
         #Draw robot orientation and marker
-        rcenter, rfront, rtheta = draw_robot(corners[robot_index][0], detected)
-        cv2.draw_obstacles
+        rcenter, rfront, rtheta = draw_robot(corners[robot_index], mask)
+        #Draw obstacles
+        draw_obstacles(np.delete(corners, robot_index, 0), mask)
         if cv2.waitKey(1) == ord('q'):
             break
-        cv2.imshow('Detection', detected)
+        cv2.imshow("Detection", detected)
+        cv2.imshow("Mask", mask)
     cap.release()
     cv2.destroyAllWindows()
 
-def draw_obstacles(corner_obs, id, frame):
-    corner_obs = corner_obs.reshape((-1,1,2))
-    cv2.polylines(frame, [pts], True, (255,255,255))
+def draw_obstacles(corner_obs, frame):
+    if np.all(corner_obs != None):
+        for i in range(len(corner_obs)):
+            obs = np.int32(corner_obs[i][0])
+            cv2.polylines(frame, [obs], True, (255,255,255), 5)
+            cv2.fillConvexPoly(frame, obs, (255,255,255))
 
 def draw_robot(corner_robot, frame):
+    corner_robot = np.int32(corner_robot[0])
     #Get center of robot
     center = [int(corner_robot[0][0]/2 + corner_robot[2][0]/2),
                 int(corner_robot[0][1]/2 + corner_robot[2][1]/2)]
@@ -54,7 +62,10 @@ def draw_robot(corner_robot, frame):
     #Front extension
     extension = [front[0]+int(20*np.sin(theta)), front[1]+int(20*np.cos(theta))]
     #Draw line towards front face
-    cv2.line(frame, tuple(center), tuple(extension), (255,0,0), 2)
+    cv2.line(frame, tuple(center), tuple(extension), (0,0,255), 5)
+    #Fill with red
+    cv2.fillConvexPoly(frame, corner_robot, (0,0,255))
+    cv2.polylines(frame, [corner_robot], True, (0,0,255), 5)
     return center, front, theta
 
 if __name__ == '__main__':
