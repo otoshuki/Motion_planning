@@ -4,6 +4,8 @@
 import numpy as np
 import cv2
 import cv2.aruco as aruco
+import serial
+import struct
 
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
@@ -12,6 +14,12 @@ font = cv2.FONT_HERSHEY_COMPLEX
 def main():
     #Open the camera
     cap = cv2.VideoCapture(1)
+    #Set up serial port
+    try:
+        arduino = serial.Serial('/dev/ttyACM0', 9600)
+        connected = 1
+    except:
+        connected = 0
     while(1):
         #Detect marker
         _, frame = cap.read()
@@ -33,13 +41,14 @@ def main():
                 if ids[i][0] == 0: robot_index = i
         #Create mask
         mask = np.zeros(frame.shape)
-        corner_obs = corners
+        #Draw robot orientation and marker
         if robot_index != None:
-            #Draw robot orientation and marker
             rcenter, rfront, rtheta = draw_robot(corners[robot_index], mask)
-            corner_obs = np.delete(corners, robot_index, 0)
+            corners = np.delete(corners, robot_index, 0)
         #Draw obstacles
-        draw_obstacles(corner_obs, mask)
+        draw_obstacles(corners, mask)
+
+        #End work
         if cv2.waitKey(1) == ord('q'):
             break
         cv2.imshow("Detection", detected)

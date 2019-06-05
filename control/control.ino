@@ -3,12 +3,12 @@
 //Arduino control code
 
 //Motor driver connections
-int enA = 5;
+int enA = 5; //Left
 int in1 = 6;
 int in2 = 7;
 int in3 = 8;
 int in4 = 9;
-int enB = 10;
+int enB = 10; //Right
 
 //LForward - in1 - LOW & in2 - HIGH
 //RForward - in3 - LOW & in4 - HIGH
@@ -21,12 +21,46 @@ void setup() {
 }
 
 void loop() {
-  //Left forward
-  digitalWrite(enA, HIGH);
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  //Right forward
-  digitalWrite(enB, HIGH);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
+  //Serial read data
+  digitalWrite(enA, LOW);
+  digitalWrite(enB, LOW);
+  if (Serial.available()){
+    char data = Serial.read();
+    if (data != '\n'){
+      Serial.println(data);
+      if (data == 'w'){
+        digitalWrite(enA, HIGH);
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, HIGH);
+        digitalWrite(enB, HIGH);
+        digitalWrite(in3, LOW);
+        digitalWrite(in4, HIGH);
+      }
+      if (data == 's'){
+        digitalWrite(enA, HIGH);
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+        digitalWrite(enB, HIGH);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, LOW);
+      }
+      if (data == 'a'){
+        digitalWrite(enA, HIGH);
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+        digitalWrite(enB, HIGH);
+        digitalWrite(in3, LOW);
+        digitalWrite(in4, HIGH);
+      }
+      if (data == 'd'){
+        digitalWrite(enA, HIGH);
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, HIGH);
+        digitalWrite(enB, HIGH);
+        digitalWrite(in3, HIGH);
+        digitalWrite(in4, LOW);
+      }
+    }
+  }
+  delay(100);
 }
