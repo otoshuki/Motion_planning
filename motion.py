@@ -15,6 +15,7 @@ def main():
     while(1):
         #Detect marker
         _, frame = cap.read()
+        frame = np.rot90(frame, 2)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
         params = aruco.DetectorParameters_create()
@@ -30,9 +31,9 @@ def main():
                                     font, 0.5, (0, 0, 255), 1, 4)
                 #0th marker as robot location
                 if ids[i][0] == 0: robot_index = i
-
         #Create mask
         mask = np.zeros(frame.shape)
+        corner_obs = corners
         if robot_index != None:
             #Draw robot orientation and marker
             rcenter, rfront, rtheta = draw_robot(corners[robot_index], mask)
