@@ -13,8 +13,10 @@ font = cv2.FONT_HERSHEY_COMPLEX
 clickX = 0
 clickY = 0
 change = False
+#Node selection
 click_node = False
-
+letters = ['Center','A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 #Main function
 def main():
     #Open the camera
@@ -66,7 +68,8 @@ def main():
             nodes = click_nodes(nodes)
             if len(nodes) > 0:
                 draw_nodes(mask, nodes)
-
+                if len(nodes) > 1:
+                    calc_error(nodes, rtheta)
         cv2.imshow("Detection", detected)
         cv2.imshow("Mask", mask)
         #End work
@@ -126,16 +129,20 @@ def click_nodes(nodes):
 
 #Function to draw connecting lines to nodes
 def draw_nodes(frame, nodes):
-    letters = ['A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
     cv2.circle(frame, tuple(nodes[len(nodes)-1]), 3, (255,0,0), -1)
     for i in range(len(nodes)):
         cv2.putText(frame, letters[i], tuple(nodes[i]), font,
-                    1, (255,0,0), 2, cv2.LINE_AA)
+                    0.5, (255,0,0), 2, cv2.LINE_AA)
     cv2.polylines(frame, np.array([nodes]), False, (255,0,0), 2)
 
-# def calc_error(frame, nodes):
-
+#Function to calculate current error
+def calc_error(nodes, rtheta):
+    #Dist between center and nearest node
+    err_dist = np.sqrt((nodes[0][0] - nodes[1][0])**2 + (nodes[0][1] - nodes[1][1])**2)
+    err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]), (nodes[1][1] - nodes[0][1]))
+    # print(err_angle*180/np.pi)
+    print(err_dist)
+    return err_dist, err_angle
 
 if __name__ == '__main__':
     main()
