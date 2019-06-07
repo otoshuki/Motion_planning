@@ -149,7 +149,6 @@ def calc_error(nodes, rtheta):
     err_dist = np.sqrt((nodes[0][0] - nodes[1][0])**2 + (nodes[0][1] - nodes[1][1])**2)
     err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]),(nodes[1][1] - nodes[0][1]))
     err_angle = err_angle*180/np.pi
-    print(err_angle)
     if (err_angle > 0 or (err_angle > -290 and err_angle < -180)): err_dir = 'r'
     else: err_dir = 'l'
     return err_dist, err_dir, abs(err_angle)
