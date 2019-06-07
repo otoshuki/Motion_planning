@@ -6,6 +6,7 @@ import cv2
 import cv2.aruco as aruco
 import serial
 import struct
+import time
 
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
@@ -26,7 +27,9 @@ def main():
         arduino = serial.Serial('/dev/ttyACM0', 9600)
         connected = 1
         print("Arduino connected")
+        time.sleep(2)
     except:
+        print("Arduino not connected")
         connected = 0
     nodes = []
     global click_node
@@ -60,16 +63,21 @@ def main():
         #Clickable node selection with 'C'
         k = cv2.waitKey(1)
         if k == ord('c'):
-            click_node = not click_node
-            nodes = []
-            nodes.append(rcenter)
+            if connected == 1:
+                click_node = not click_node
+                nodes = []
+                nodes.append(rcenter)
+            else:
+                print("Arduino not connected")
         if click_node == True:
             nodes[0] = rcenter
             nodes = click_nodes(nodes)
             if len(nodes) > 0:
                 draw_nodes(mask, nodes)
                 if len(nodes) > 1:
-                    calc_error(nodes, rtheta)
+                    err_dist, err_dir, err_angle = calc_error(nodes, rtheta)
+                    arduino.flush()
+                    arduino.write((str(int(err_dist)) + ',' + err_dir + ',' + str(int(err_angle)) + '\n').encode())
         cv2.imshow("Detection", detected)
         cv2.imshow("Mask", mask)
         #End work
@@ -139,10 +147,12 @@ def draw_nodes(frame, nodes):
 def calc_error(nodes, rtheta):
     #Dist between center and nearest node
     err_dist = np.sqrt((nodes[0][0] - nodes[1][0])**2 + (nodes[0][1] - nodes[1][1])**2)
-    err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]), (nodes[1][1] - nodes[0][1]))
-    # print(err_angle*180/np.pi)
-    print(err_dist)
-    return err_dist, err_angle
+    err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]),(nodes[1][1] - nodes[0][1]))
+    err_angle = err_angle*180/np.pi
+    print(err_angle)
+    if (err_angle > 0 or (err_angle > -290 and err_angle < -180)): err_dir = 'r'
+    else: err_dir = 'l'
+    return err_dist, err_dir, abs(err_angle)
 
 if __name__ == '__main__':
     main()
