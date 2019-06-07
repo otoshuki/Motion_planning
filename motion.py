@@ -16,6 +16,7 @@ clickY = 0
 change = False
 #Node selection
 click_node = False
+move = False
 letters = ['Center','A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 #Main function
@@ -24,7 +25,7 @@ def main():
     cap = cv2.VideoCapture(1)
     #Set up serial port
     try:
-        arduino = serial.Serial('/dev/ttyACM0', 9600)
+        arduino = serial.Serial('/dev/ttyACM1', 9600)
         connected = 1
         print("Arduino connected")
         time.sleep(2)
@@ -33,6 +34,7 @@ def main():
         connected = 0
     nodes = []
     global click_node
+    global move
     while(1):
         #Detect marker
         _, frame = cap.read()
@@ -67,18 +69,24 @@ def main():
                 click_node = not click_node
                 nodes = []
                 nodes.append(rcenter)
+                if click_node == False: move = not move
             else:
                 print("Arduino not connected")
+        if k == ord('w'):
+            if click_node == True:
+                move = not move
         if click_node == True:
             nodes[0] = rcenter
             nodes = click_nodes(nodes)
             if len(nodes) > 0:
                 draw_nodes(mask, nodes)
-                if len(nodes) > 1:
+                if len(nodes) > 1 and move == True:
+
                     err_dist, err_dir, err_angle = calc_error(nodes, rtheta)
+                    if (err_dist < 30 and err_angle < 20): nodes.pop(1)
                     arduino.flush()
                     arduino.write((str(int(err_dist)) + ',' + err_dir + ',' + str(int(err_angle)) + '\n').encode())
-        cv2.imshow("Detection", detected)
+        #cv2.imshow("Detection", detected)
         cv2.imshow("Mask", mask)
         #End work
         if k  == ord('q'): break
@@ -149,8 +157,10 @@ def calc_error(nodes, rtheta):
     err_dist = np.sqrt((nodes[0][0] - nodes[1][0])**2 + (nodes[0][1] - nodes[1][1])**2)
     err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]),(nodes[1][1] - nodes[0][1]))
     err_angle = err_angle*180/np.pi
-    if (err_angle > 0 or (err_angle > -290 and err_angle < -180)): err_dir = 'r'
-    else: err_dir = 'l'
+    if (err_angle > 0 or (err_angle > -360 and err_angle < -180)): err_dir = 'r'
+    else: err_dir ='l'
+    if (err_angle > -360 and err_angle < -180): err_angle = 360 + err_angle
+    #print(err_dir)
     return err_dist, err_dir, abs(err_angle)
 
 if __name__ == '__main__':
