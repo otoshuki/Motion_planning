@@ -23,6 +23,8 @@ letters = ['Center','A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', '
 def main():
     #Open the camera
     cap = cv2.VideoCapture(1)
+    aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
+    params = aruco.DetectorParameters_create()
     #Set up serial port
     try:
         arduino = serial.Serial('/dev/ttyACM1', 9600)
@@ -40,8 +42,6 @@ def main():
         _, frame = cap.read()
         frame = np.rot90(frame, 2)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
-        params = aruco.DetectorParameters_create()
         corners, ids, rejected = aruco.detectMarkers(gray, aruco_dict,
                                                     parameters = params)
         detected = aruco.drawDetectedMarkers(frame, corners)
@@ -81,7 +81,6 @@ def main():
             if len(nodes) > 0:
                 draw_nodes(mask, nodes)
                 if len(nodes) > 1 and move == True:
-
                     err_dist, err_dir, err_angle = calc_error(nodes, rtheta)
                     if (err_dist < 30 and err_angle < 20): nodes.pop(1)
                     arduino.flush()
@@ -127,7 +126,7 @@ def get_location(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         clickX = x
         clickY = y
-        change = 1
+        change = True
 
 #Function to select clickable nodes
 def click_nodes(nodes):
