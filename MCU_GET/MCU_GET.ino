@@ -20,6 +20,9 @@ Serial.println("Connected");
 }
  
 void loop() {
+  String dist;
+  String angle;
+  String dir;
  
   if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
    
@@ -31,8 +34,20 @@ void loop() {
     if (httpCode > 0) { //Check the returning code
      
       String payload = http.getString();   //Get the request response payload
-      Serial.println(payload);                     //Print the response payload
-     
+      if (payload == "") Serial.println("No data");
+      else {
+        //Serial.println(payload);                     //Print the response payload
+        dist = payload.substring(0, payload.indexOf('+'));
+        Serial.print(dist);
+        Serial.print(",");
+        angle = payload.substring(payload.indexOf('+')+1, payload.indexOf('-'));
+        Serial.print(angle);
+        Serial.print(",");
+        dir = payload.substring(payload.indexOf('-')+1, payload.indexOf('*'));
+        Serial.println(dir);
+    
+      }
+
     }
     else {
       Serial.println("No data");
@@ -42,6 +57,6 @@ void loop() {
    
   }
    
-  delay(1000);    //Send a request every 30 seconds
+  //delay(1000);    //Send a request every 30 seconds
    
 }
