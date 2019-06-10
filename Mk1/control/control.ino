@@ -20,7 +20,8 @@ float ki_angle = 5;
 float kd_angle = 110;
 float kp_dist = 1.8;
 float ki_dist = 100;
-float kd_dist = 50;
+float kd_dist = 5
+0;
 //PID values
 float currTime_angle = 0;
 float prevTime_angle = 0;
