@@ -6,6 +6,10 @@ import cv2
 import cv2.aruco as aruco
 import struct
 import time
+import matplotlib.pyplot as plt
+from matplotlib import colors
+
+cmap = colors.ListedColormap(['Blue','red', 'black'])
 
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
@@ -18,10 +22,11 @@ click_node = False
 move = False
 letters = ['Center','A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
 #Main function
 def main():
     #Open the camera
-    cap = cv2.VideoCapture(1)
+    # cap = cv2.VideoCapture(1)
     aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
     params = aruco.DetectorParameters_create()
     nodes = []
@@ -30,8 +35,9 @@ def main():
     f = open('data.txt', 'w+')
     while(1):
         #Detect marker
-        _, frame = cap.read()
-        frame = np.rot90(frame, 2)
+        # _, frame = cap.read()
+        frame = cv2.imread('frame.png')
+        # frame = np.rot90(frame, 2)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, ids, rejected = aruco.detectMarkers(gray, aruco_dict,
                                                     parameters = params)
@@ -46,10 +52,11 @@ def main():
                 #0th marker as robot location
                 if ids[i][0] == 0: robot_index = i
         #Create mask
-        mask = np.zeros(frame.shape)
+        mask = np.ones(frame.shape)*255
         #Draw robot orientation and marker
         if robot_index != None:
-            rcenter, rfront, rtheta = draw_robot(corners[robot_index], mask)
+            robot_corners = corners[robot_index]
+            rcenter, rfront, rtheta = draw_robot(robot_corners, mask)
             corners = np.delete(corners, robot_index, 0)
         #Draw obstacles
         draw_obstacles(corners, mask)
@@ -78,13 +85,16 @@ def main():
         else:
             f.truncate(0)
             move = False
-        #cv2.imshow("Detection", detected)
+        x_seg, y_seg = create_map(mask, robot_corners)
+        draw_grid(x_seg, y_seg, mask)
+        make_grid(x_seg, y_seg, rcenter)
+        cv2.imshow("Detection", frame)
         cv2.imshow("Mask", mask)
         #End work
         if k  == ord('q'):
             f.truncate(0)
             break
-    cap.release()
+    # cap.release()
     cv2.destroyAllWindows()
 
 #Function to draw obstacle in white
@@ -92,8 +102,8 @@ def draw_obstacles(corner_obs, frame):
     if np.all(corner_obs != None):
         for i in range(len(corner_obs)):
             obs = np.int32(corner_obs[i][0])
-            cv2.polylines(frame, [obs], True, (255,255,255), 5)
-            cv2.fillConvexPoly(frame, obs, (255,255,255))
+            cv2.polylines(frame, [obs], True, (0,0,0), 5)
+            cv2.fillConvexPoly(frame, obs, (0,0,0))
 
 #Function to draw robot in red
 def draw_robot(corner_robot, frame):
@@ -156,6 +166,47 @@ def calc_error(nodes, rtheta):
     if (err_angle > -360 and err_angle < -180): err_angle = 360 + err_angle
     #print(err_dir)
     return err_dist, err_dir, abs(err_angle)
+
+#Distance function
+def dist(p1,p2):
+    return np.sqrt((p1[0]-p2[0])**2 + (p1[1] - p2[1])**2)
+
+#Basic graph for mask guides
+def create_map(mask, corners):
+    width = dist(corners[0][0], corners[0][1])+10
+    x_segment = np.arange(0, np.shape(mask)[1], width)
+    y_segment = np.arange(0, np.shape(mask)[0], width)
+    x_segment = np.append(x_segment, np.shape(mask)[1])
+    y_segment = np.append(y_segment, np.shape(mask)[0])
+    return x_segment.astype(int), y_segment.astype(int)
+
+#Draw basic graph on mask
+def draw_grid(x_segment, y_segment, mask):
+    x_segment = x_segment
+    y_segment = y_segment
+    y_max, x_max, _ = np.shape(mask)
+    for i in range(1, np.shape(x_segment)[0]-1):
+        x_grid = x_segment[i]
+        cv2.line(mask, (x_grid, 0), (x_grid, y_max), (0,0,0), 2)
+    # print(x_segment)
+    for i in range(1, np.shape(y_segment)[0]-1):
+        y_grid = y_segment[i]
+        cv2.line(mask, (0, y_grid), (x_max, y_grid), (0,0,0), 2)
+
+#Create grid for motion planning
+def make_grid(x_segment, y_segment, r_center):
+    x_axis = np.shape(x_segment)[0]
+    y_axis = np.shape(y_segment)[0] - 2
+    grid = np.ones([y_axis, x_axis])
+    r_x = np.where(x_segment > r_center[0])[0][0] - 1
+    r_y = np.where(y_segment > r_center[1])[0][0] - 1
+    print(r_x)
+    print(r_y)
+    grid[r_y][r_x] = 0
+    grid[r_y][r_x+1] = 2
+    plt.pcolor(grid, cmap = cmap, edgecolors='k', linewidths=3)
+    plt.gca().invert_yaxis()
+    plt.show()
 
 if __name__ == '__main__':
     main()
