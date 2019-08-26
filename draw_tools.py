@@ -11,6 +11,7 @@ cmap = colors.ListedColormap(['Blue','red', 'black'])
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
 
+########################################################
 #OpenCV Visualization
 
 #Function to draw obstacle in white
@@ -33,7 +34,8 @@ def draw_robot(corner_robot, frame):
     cv2.fillConvexPoly(frame, corner_robot, (0,0,255))
     cv2.polylines(frame, [corner_robot], True, (0,0,255), 5)
     #Get angle wrt origin
-    theta = np.arctan2((corner_robot[0][0]-corner_robot[3][0]),(corner_robot[0][1]-corner_robot[3][1]))
+    theta = np.arctan2((corner_robot[0][0]-corner_robot[3][0]),
+                       (corner_robot[0][1]-corner_robot[3][1]))
     #Front extension
     extension = [front[0]+int(20*np.sin(theta)), front[1]+int(20*np.cos(theta))]
     #Draw line towards front face
@@ -44,7 +46,7 @@ def draw_robot(corner_robot, frame):
 def draw_nodes(frame, nodes):
     cv2.circle(frame, tuple(nodes[len(nodes)-1]), 3, (255,0,0), -1)
     for i in range(len(nodes)):
-        cv2.putText(frame, letters[i], tuple(nodes[i]), font,
+        cv2.putText(frame, chr(65+i), tuple(nodes[i]), font,
                     0.5, (255,0,0), 2, cv2.LINE_AA)
     cv2.polylines(frame, np.array([nodes]), False, (255,0,0), 2)
 
@@ -61,6 +63,7 @@ def draw_grid(x_segment, y_segment, mask):
         y_grid = y_segment[i]
         cv2.line(mask, (0, y_grid), (x_max, y_grid), (0,0,0), 1)
 
+########################################################
 #Matplotlib Visualization
 
 #Create grid for motion planning
@@ -74,4 +77,4 @@ def make_grid(x_segment, y_segment, r_center):
     grid[r_y][r_x+1] = 2
     plt.pcolor(grid, cmap = cmap, edgecolors='k', linewidths=3)
     plt.gca().invert_yaxis()
-    plt.show()
+    # plt.show()

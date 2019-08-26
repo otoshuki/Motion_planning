@@ -18,8 +18,6 @@ change = False
 #Node selection
 click_node = False
 move = False
-letters = ['Center','A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
 #Main function
 def main():
@@ -95,10 +93,6 @@ def main():
     # cap.release()
     cv2.destroyAllWindows()
 
-
-
-
-
 #Function to find mouse click location
 def get_location(event, x, y, flags, param):
     global clickX, clickY, change
@@ -124,8 +118,7 @@ def click_nodes(nodes):
 
 #Function to calculate current error
 def calc_error(nodes, rtheta):
-    #Dist between center and nearest node
-    err_dist = np.sqrt((nodes[0][0] - nodes[1][0])**2 + (nodes[0][1] - nodes[1][1])**2)
+    err_dist = np.linalg.norm(np.array(nodes[0])-np.array(nodes[1]))
     err_angle = rtheta - np.arctan2((nodes[1][0] - nodes[0][0]),(nodes[1][1] - nodes[0][1]))
     err_angle = err_angle*180/np.pi
     if (err_angle > 0 or (err_angle > -360 and err_angle < -180)): err_dir = 'r'
@@ -134,13 +127,9 @@ def calc_error(nodes, rtheta):
     #print(err_dir)
     return err_dist, err_dir, abs(err_angle)
 
-#Distance function
-def dist(p1,p2):
-    return np.sqrt((p1[0]-p2[0])**2 + (p1[1] - p2[1])**2)
-
 #Basic graph for mask guides
 def create_map(mask, corners):
-    width = dist(corners[0][0], corners[0][1])+10
+    width = np.linalg.norm(corners[0][0]-corners[0][1])+10
     x_segment = np.arange(0, np.shape(mask)[1], width)
     y_segment = np.arange(0, np.shape(mask)[0], width)
     x_segment = np.append(x_segment, np.shape(mask)[1])
