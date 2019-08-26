@@ -81,7 +81,8 @@ def main():
         else:
             f.truncate(0)
             move = False
-        x_seg, y_seg = create_map(mask, robot_corners)
+        #Create initial map
+        x_seg, y_seg = create_map(mask, robot_corners)    
         draw_tools.draw_grid(x_seg, y_seg, mask)
         draw_tools.make_grid(x_seg, y_seg, rcenter)
         cv2.imshow("Detection", frame)

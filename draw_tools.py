@@ -1,4 +1,5 @@
 #Robotics Club - MoPAT
+#Helper file
 
 #Import required libraries
 import numpy as np
@@ -6,7 +7,15 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
-cmap = colors.ListedColormap(['Blue','red', 'black'])
+#Color Map
+# 0 - while - clear cell
+# 1 - black - obstacle
+# 2 - red   - visited
+# 3 - green - start
+# 4 - yellow- destination
+# 5 - blue  - path
+
+cmap = colors.ListedColormap(['white','black','red','green','yellow'])
 
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
