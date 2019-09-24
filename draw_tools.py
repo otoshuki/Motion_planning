@@ -15,8 +15,6 @@ from matplotlib import colors
 # 4 - yellow- destination
 # 5 - blue  - path
 
-cmap = colors.ListedColormap(['white','black','red','green','yellow'])
-
 #CV2 font for text
 font = cv2.FONT_HERSHEY_COMPLEX
 
@@ -77,6 +75,7 @@ def draw_grid(x_segment, y_segment, mask):
 
 #Create grid for motion planning
 def make_grid(x_segment, y_segment, r_center):
+    cmap = colors.ListedColormap(['white','black','red','green','yellow'])
     x_axis = np.shape(x_segment)[0]
     y_axis = np.shape(y_segment)[0] - 2
     grid = np.ones([y_axis, x_axis])
