@@ -5,8 +5,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
  
-const char* ssid = "duncan";
-const char* password = "11111111";
+const char* ssid = "ROBO_IITG_2.4G";
+const char* password = "iamthefuture";
 //Motor driver connections
 int enA = 12; //Left
 int in1 = 5;
@@ -73,7 +73,7 @@ void loop() {
   String dir;
   if (WiFi.status() == WL_CONNECTED){
     HTTPClient http;
-    http.begin("http://192.168.43.135:8080/data.txt");
+    http.begin("http://192.168.0.5:8080/data.txt");
     int httpCode = http.GET();
   
     if (httpCode > 0) {

@@ -22,7 +22,7 @@ move = False
 #Main function
 def main():
     #Open the camera
-    # cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(1)
     aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
     params = aruco.DetectorParameters_create()
     nodes = []
@@ -31,9 +31,9 @@ def main():
     f = open('data.txt', 'w+')
     while(1):
         #Detect marker
-        # _, frame = cap.read()
-        frame = cv2.imread('frame.png')
-        # frame = np.rot90(frame, 2)
+        _, frame = cap.read()
+        #frame = cv2.imread('frame.png')
+        frame = np.rot90(frame, 1)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, ids, rejected = aruco.detectMarkers(gray, aruco_dict,
                                                     parameters = params)
@@ -53,6 +53,7 @@ def main():
         if robot_index != None:
             robot_corners = corners[robot_index]
             rcenter, rfront, rtheta = draw_tools.draw_robot(robot_corners, mask)
+            print("Center : ", rcenter, " Theta : ", rtheta*180/np.pi)
             corners = np.delete(corners, robot_index, 0)
         #Draw obstacles
         draw_tools.draw_obstacles(corners, mask)
@@ -82,16 +83,16 @@ def main():
             f.truncate(0)
             move = False
         #Create initial map
-        x_seg, y_seg = create_map(mask, robot_corners)    
-        draw_tools.draw_grid(x_seg, y_seg, mask)
-        draw_tools.make_grid(x_seg, y_seg, rcenter)
+        #x_seg, y_seg = create_map(mask, robot_corners)
+        #draw_tools.draw_grid(x_seg, y_seg, mask)
+        #draw_tools.make_grid(x_seg, y_seg, rcenter)
         cv2.imshow("Detection", frame)
         cv2.imshow("Mask", mask)
         #End work
         if k  == ord('q'):
             f.truncate(0)
             break
-    # cap.release()
+    cap.release()
     cv2.destroyAllWindows()
 
 #Function to find mouse click location
